@@ -18,7 +18,7 @@ async function convertToWebP(file) {
 
   const img = new Image();
   img.src = image;
-  await new Promise((resolve) => {
+  const webp = await new Promise((resolve) => {
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
@@ -29,18 +29,12 @@ async function convertToWebP(file) {
     };
   });
 
-  return canvas.toDataURL("image/webp");
+  return webp;
 }
 
 function App() {
   const [files, setFiles] = createSignal([]);
   const [isSubmitted, setIsSubmitted] = createSignal(false);
-
-  const particlesInit = async (main) => {
-    // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
-    // starting from v2 you can add only the features you need reducing the bundle size
-    await loadFull(main);
-  };
 
   async function handleDrop(event) {
     event.preventDefault();
@@ -62,13 +56,17 @@ function App() {
   // }
   async function handleSubmit() {
     const zip = new JSZip();
+    const promises = [];
 
-    await Promise.all(
-      files().map(async (file, index) => {
-        const convertedFile = await convertToWebP(file);
+    for (const index in files()) {
+      const file = files()[index];
+      const convertedFilePromise = convertToWebP(file).then((convertedFile) => {
         zip.file(`ConvertedWebP${index}.webp`, convertedFile);
-      })
-    );
+      });
+      promises.push(convertedFilePromise);
+    }
+
+    await Promise.all(promises);
 
     zip.generateAsync({ type: "blob" }).then((content) => {
       const downloadLink = document.createElement("a");
