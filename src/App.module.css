@@ -65,9 +65,11 @@
   background-color: gray;
 }
 .menta {
-  margin-top: 80vh;
   text-align: center;
+  /* Position the button */
   position: absolute;
+  top: calc(50% + 300px); /* Adjust the value as needed */
+
   right: calc(50% - 60px);
 }
 
